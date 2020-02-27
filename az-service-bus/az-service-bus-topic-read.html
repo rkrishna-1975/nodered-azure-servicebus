@@ -1,0 +1,95 @@
+<script type="text/javascript">
+    RED.nodes.registerType('az-service-bus-topic-read',{
+        category: 'Azure',
+        color: '#a6bbcf',
+        defaults: {
+            name: {value:""},
+            connectionString: { value: "", required: true, type: "az-sb-config"},
+            topicName : {value:"", required: true},
+            subscriptionName: {value:"", required: true},
+            maxConcurrentCalls: { value: 1, validate: RED.validators.number(), required: true},
+            isSessionEnabled : { value: false}
+        },
+        inputs:0,
+        outputs:1,
+        icon: "arrow-in.png",
+        label: function() {
+            return this.name||this.topicName+(this.isSessionEnabled?'*':'')||"Read From Azure Service Bus Topic";
+        },
+        paletteLabel: function() {
+            return "SB Topic In"
+        }
+    });
+</script>
+
+<script type="text/html" data-template-name="az-service-bus-topic-read">
+    <div class="form-row">
+        <label for="node-input-connectionString"><i class="icon-tag"></i>Connection</label>
+        <!-- <input type="text" id="node-input-connectionString" placeholder="Endpoint=sb://my-servicebus-namespace.servicebus.windows.net/;SharedAccessKeyName=my-SA-name;SharedAccessKey=my-SA-key"> -->
+        <input type="text" id="node-input-connectionString" placeholder="Select a connection configuration" >
+    </div>
+    <div class="form-row">
+        <label for="node-input-topicName"><i class="icon-tag"></i>Topic</label>
+        <input type="text" id="node-input-topicName" placeholder="Topic Name">
+    </div>
+    <div class="form-row">
+        <label for="node-input-subscriptionName"><i class="icon-tag"></i>Subscription</label>
+        <input type="text" id="node-input-subscriptionName" placeholder="Subscription Name">
+    </div>
+    <div class="form-row">
+        <label for="node-input-maxConcurrentCalls"><i class="icon-tag"></i>Concurrency</label>
+        <input type="text" id="node-input-maxConcurrentCalls" placeholder="maxConcurrentCalls parameter">
+    </div>    
+    <div class="form-row">
+        <label for="node-input-name"><i class="icon-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+    <div class="form-row">
+        <label for="node-input-isSessionEnabled"><i class="icon-tag"></i>Session</label>
+        <input type="checkbox" id="node-input-isSessionEnabled" placeholder="isSessionEnabled">
+    </div>
+</script>
+
+<script type="text/html" data-help-name="az-service-bus-topic-read">
+    <p>This is a node that reads from an azure service bus. It has the following cofig properties</p>
+    <h3>Inputs</h3>
+    <dl class="message-properties">
+        <dt>payload
+            <span class="property-type">string | buffer</span>
+        </dt>
+        <dd> the payload of the message to publish. </dd>
+        <dt class="optional">topic <span class="property-type">string</span></dt>
+        <dd> the MQTT topic to publish to.</dd>
+    </dl>
+
+    <h3>Outputs</h3>
+     <ol class="node-ports">
+         <li>Standard output
+             <dl class="message-properties">
+                 <dt>payload <span class="property-type">string</span></dt>
+                 <dd>the standard output of the command.</dd>
+             </dl>
+         </li>
+         <li>Standard error
+             <dl class="message-properties">
+                 <dt>payload <span class="property-type">string</span></dt>
+                 <dd>the standard error of the command.</dd>
+             </dl>
+         </li>
+     </ol>
+
+    <h3>Details</h3>
+    <p><code>msg.payload</code> is used as the payload of the published message.
+    If it contains an Object it will be converted to a JSON string before being sent.
+    If it contains a binary Buffer the message will be published as-is.</p>
+    <p>The topic used can be configured in the node or, if left blank, can be set
+    by <code>msg.topic</code>.</p>
+    <p>Likewise the QoS and retain values can be configured in the node or, if left
+    blank, set by <code>msg.qos</code> and <code>msg.retain</code> respectively.</p>
+
+    <h3>References</h3>
+    <ul>
+        <li><a>Twitter API docs</a> - full description of <code>msg.tweet</code> property</li>
+        <li><a>GitHub</a> - the nodes github repository</li>
+    </ul>
+</script>

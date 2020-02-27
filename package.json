@@ -1,0 +1,37 @@
+{
+  "name": "nodered-azure-servicebus",
+  "version": "0.1.0",
+  "description": "This aims to create an azure service bus flows using the azure published npm packages for the same.",
+  "main": "index.js",
+  "node-red": {
+    "nodes": {
+      "az-service-bus-read": "./az-service-bus/az-service-bus-read.js",
+      "az-service-bus-write": "./az-service-bus/az-service-bus-write.js",
+      "az-service-bus-topic-read": "./az-service-bus/az-service-bus-topic-read.js",
+      "az-service-bus-topic-write": "./az-service-bus/az-service-bus-topic-write.js",
+      "az-sb-config" : "./az-service-bus/az-service-bus-config.js"
+    }
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rkrishna-1975/nodered-azure-servicebus.git"
+  },
+  "keywords": [
+    "azure",
+    "servicebus",
+    "node-red",
+    "nodered"
+  ],
+  "author": "Ramki Ramaswamy",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/rkrishna-1975/nodered-azure-servicebus/issues"
+  },
+  "homepage": "https://github.com/rkrishna-1975/nodered-azure-servicebus#readme",
+  "dependencies": {
+    "@azure/service-bus": "^1.1.3"
+  }
+}
