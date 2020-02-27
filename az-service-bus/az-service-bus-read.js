@@ -15,12 +15,12 @@ module.exports = function (RED) {
     const queueName = config.queueName;
     const isSessionEnabled = config.isSessionEnabled;
     const maxConcurrentCalls = config.maxConcurrentCalls;
+    const sessionId = config.sessionId;
 
     node.receiveMessages = function (receiver, maxConcurrentCalls, node, msg) {
       try {
         node.status({ fill: "green", shape: "ring", text: "connected" });
         receiver.registerMessageHandler(
-          //https://docs.microsoft.com/en-us/javascript/api/@azure/service-bus/receiver?view=azure-node-latest#registermessagehandler-onmessage--onerror--messagehandleroptions-
           (sbMsg) => {
             msg.sbMsg = sbMsg;
             msg.payload = convertMessageBody(sbMsg);
@@ -33,8 +33,6 @@ module.exports = function (RED) {
             node.receiveMessages(receiver, maxConcurrentCalls, node, msg);
           },
           {
-            //default configuration                    
-            //https://docs.microsoft.com/en-us/javascript/api/@azure/service-bus/messagehandleroptions?view=azure-node-latest
             'maxConcurrentCalls': maxConcurrentCalls
           }
         );
@@ -53,7 +51,9 @@ module.exports = function (RED) {
         const queueClient = sbClient.createQueueClient(queueName);
         var receiver = null;
         if (isSessionEnabled)
-          receiver = queueClient.createReceiver(ReceiveMode.receiveAndDelete, { 'maxSessionAutoRenewLockDurationInSeconds': 30 });
+          receiver = queueClient.createReceiver(ReceiveMode.receiveAndDelete, { 
+            'sessionId' : sessionId,
+            'maxSessionAutoRenewLockDurationInSeconds': 30 });
         else
           receiver = queueClient.createReceiver(ReceiveMode.receiveAndDelete);
 

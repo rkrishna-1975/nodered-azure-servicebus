@@ -4,11 +4,12 @@
         color: '#a6bbcf',
         defaults: {
             name: {value:""},
-            connectionString: { value: "", required: true, type: "az-sb-config"},
-            topicName : {value:"", required: true},
-            subscriptionName: {value:"", required: true},
+            connectionString: { value: null, required: true, type: "az-sb-config"},
+            topicName : {value: null, required: true},
+            subscriptionName: {value: null, required: true},
             maxConcurrentCalls: { value: 1, validate: RED.validators.number(), required: true},
-            isSessionEnabled : { value: false}
+            isSessionEnabled : { value: false},
+            sessionId : { value: null}
         },
         inputs:0,
         outputs:1,
@@ -48,48 +49,75 @@
         <label for="node-input-isSessionEnabled"><i class="icon-tag"></i>Session</label>
         <input type="checkbox" id="node-input-isSessionEnabled" placeholder="isSessionEnabled">
     </div>
+    <div class="form-row">
+        <label for="node-input-sessionId"><i class="icon-tag"></i>SessionId</label>
+        <input type="text" id="node-input-sessionId" placeholder="sessionId">
+    </div>
 </script>
 
 <script type="text/html" data-help-name="az-service-bus-topic-read">
-    <p>This is a node that reads from an azure service bus. It has the following cofig properties</p>
-    <h3>Inputs</h3>
+    <p>This node reads from an azure service bus topic. It has the following config properties</p>
+    <h3>Configuration</h3>
     <dl class="message-properties">
-        <dt>payload
-            <span class="property-type">string | buffer</span>
+        <dt> Connection 
+            <span class="property-type">Service bus configuration</span>
         </dt>
-        <dd> the payload of the message to publish. </dd>
-        <dt class="optional">topic <span class="property-type">string</span></dt>
-        <dd> the MQTT topic to publish to.</dd>
+        <dd> You have to select a service bus connection configuration if you have already created one. Else create a new one. This configuration holds the connection string for the endpoint. 
+        </dd>
     </dl>
-
+    <dl class="message-properties">
+        <dt> Topic 
+            <span class="property-type">String</span>
+        </dt>
+        <dd> The name of the topic you want to listen from</dd>
+    </dl>
+    <dl class="message-properties">
+        <dt> Subscription 
+            <span class="property-type">String</span>
+        </dt>
+        <dd> The name of the subsctiption you want to use</dd>
+    </dl>
+    <dl class="message-properties">
+        <dt> Concurrency 
+            <span class="property-type">Number</span>
+        </dt>
+        <dd>Number of concurrent messages you want to process. The default is set to 1</dd>
+    </dl>
+    <dl class="message-properties">
+        <dt class="optional"> Name 
+            <span class="property-type">String</span>
+        </dt>
+        <dd> This name will show in the flow. If left empty, the flow node will default to show the topic name
+        </dd>
+    </dl>
+    <dl class="message-properties">
+        <dt> Session 
+            <span class="property-type">Boolean</span>
+        </dt>
+        <dd> If the subscription is session enabled, please check this box.This will generate a sessionHandler to handle messgaes from the subscription.</dd>
+    </dl>
+    <dl class="message-properties">
+        <dt class="optional"> SessionId
+            <span class="property-type">String</span>
+        </dt>
+        <dd> Please enter a sessionID only if you want the listener to lock to a specific session. If not entered, the receiver will find an available session to connect to.</dd>
+    </dl>
     <h3>Outputs</h3>
      <ol class="node-ports">
-         <li>Standard output
+         <li>Message Out
              <dl class="message-properties">
-                 <dt>payload <span class="property-type">string</span></dt>
-                 <dd>the standard output of the command.</dd>
-             </dl>
-         </li>
-         <li>Standard error
-             <dl class="message-properties">
-                 <dt>payload <span class="property-type">string</span></dt>
-                 <dd>the standard error of the command.</dd>
+                 <dt>payload <span class="property-type">string|Object</span></dt>
+                 <dd>This can either have a string representation of the data send in the message body or the Object representation if the body was a JSON object.</dd>
+                 <dt>sbMsg <span class="property-type">Object</span></dt>
+                 <dd>This has the original message object passed by the azure service bus topic. It has other properties like the user properties, delivery information, sessionId, partitionKey etc. Please debug the object to see the details you may need.</dd>
              </dl>
          </li>
      </ol>
-
-    <h3>Details</h3>
-    <p><code>msg.payload</code> is used as the payload of the published message.
-    If it contains an Object it will be converted to a JSON string before being sent.
-    If it contains a binary Buffer the message will be published as-is.</p>
-    <p>The topic used can be configured in the node or, if left blank, can be set
-    by <code>msg.topic</code>.</p>
-    <p>Likewise the QoS and retain values can be configured in the node or, if left
-    blank, set by <code>msg.qos</code> and <code>msg.retain</code> respectively.</p>
-
+     <h3>Details</h3>
+     <p>This is a Azure service bus subscription listner. This can be configured to listen either to a regular subscription or a session enabled subscription. The listner cannot be turned off and will continually retry if the connection fails or an error occurs.</p>
+ 
     <h3>References</h3>
     <ul>
-        <li><a>Twitter API docs</a> - full description of <code>msg.tweet</code> property</li>
-        <li><a>GitHub</a> - the nodes github repository</li>
+        <li><a href="https://docs.microsoft.com/en-us/javascript/api/@azure/service-bus?view=azure-node-latest">Microsoft Azure API docs</a> - full description of <code>msg.sbMsg</code> property</li>
     </ul>
 </script>

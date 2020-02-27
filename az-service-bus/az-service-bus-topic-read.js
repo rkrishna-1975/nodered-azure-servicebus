@@ -15,12 +15,12 @@ module.exports = function (RED) {
     const subscriptionName = config.subscriptionName;
     const isSessionEnabled = config.isSessionEnabled;
     const maxConcurrentCalls = config.maxConcurrentCalls;
+    const sessionId = config.sessionId;
 
     node.receiveMessages = function (receiver, maxConcurrentCalls, node, msg) {
       try {
         node.status({ fill: "green", shape: "ring", text: "connected" });
         receiver.registerMessageHandler(
-          //https://docs.microsoft.com/en-us/javascript/api/@azure/service-bus/receiver?view=azure-node-latest#registermessagehandler-onmessage--onerror--messagehandleroptions-
           (sbMsg) => {
             msg.sbMsg = sbMsg;
             msg.payload = convertMessageBody(sbMsg);
@@ -50,7 +50,9 @@ module.exports = function (RED) {
         const subscriptionClient = sbClient.createSubscriptionClient(topicName, subscriptionName);
         var receiver = null;
         if (isSessionEnabled)
-          receiver = subscriptionClient.createReceiver(ReceiveMode.receiveAndDelete, { 'maxSessionAutoRenewLockDurationInSeconds': 30 });
+          receiver = subscriptionClient.createReceiver(ReceiveMode.receiveAndDelete, { 
+            'sessionId': sessionId,
+            'maxSessionAutoRenewLockDurationInSeconds': 30 });
         else
           receiver = subscriptionClient.createReceiver(ReceiveMode.receiveAndDelete);
 
