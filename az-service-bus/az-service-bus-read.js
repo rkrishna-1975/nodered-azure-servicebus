@@ -1,5 +1,5 @@
 const { ServiceBusClient, ReceiveMode } = require("@azure/service-bus");
-const { stringFromUTF8Array, convertMessageBody } = require("../index");
+const Utils = require("../index");
 
 // Define connection string and related Service Bus entity names here
 
@@ -16,21 +16,22 @@ module.exports = function (RED) {
     const isSessionEnabled = config.isSessionEnabled;
     const maxConcurrentCalls = config.maxConcurrentCalls;
     const sessionId = config.sessionId;
+    const utils = new Utils();
 
-    node.receiveMessages = function (receiver, maxConcurrentCalls, node, msg) {
+    node.receiveMessages = function  (receiver, maxConcurrentCalls, node, msg) {
       try {
         node.status({ fill: "green", shape: "ring", text: "connected" });
         receiver.registerMessageHandler(
           (sbMsg) => {
             msg.sbMsg = sbMsg;
-            msg.payload = convertMessageBody(sbMsg);
+            msg.payload = utils.convertMessageBody(sbMsg);
             node.debug("received content type: " + sbMsg.contentType);
             node.send(msg);
           },
           (sbErr) => {
             node.error("Error occured in message handler ==> " + sbErr);
             node.status({ fill: "red", shape: "ring", text: "disconnected" });
-            node.receiveMessages(receiver, maxConcurrentCalls, node, msg);
+            utils.retry(node.receiveMessages, [receiver, maxConcurrentCalls, node, msg],5,node)
           },
           {
             'maxConcurrentCalls': maxConcurrentCalls
@@ -39,7 +40,7 @@ module.exports = function (RED) {
       } catch (err) {
         node.error("Error occured in message handler ==> " + sbErr);
         node.status({ fill: "red", shape: "ring", text: "disconnected" });
-        node.receiveMessages(receiver, maxConcurrentCalls, node, msg);
+        utils.retry(node.receiveMessages, [receiver, maxConcurrentCalls, node, msg],5,node)
       }
     }
 

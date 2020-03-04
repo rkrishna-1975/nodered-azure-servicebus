@@ -1,5 +1,5 @@
 const { ServiceBusClient, ReceiveMode } = require("@azure/service-bus");
-const { stringFromUTF8Array, convertMessageBody } = require("../index");
+const Utils = require("../index");
 // Define connection string and related Service Bus entity names here
 
 module.exports = function (RED) {
@@ -7,6 +7,7 @@ module.exports = function (RED) {
     RED.nodes.createNode(this, config);
     var node = this;
     var msg = {};
+    const utils = new Utils();
 
     node.debug("Loaded the function");
     const connectionString = RED.nodes.getNode(config.connectionString).connectionString;
@@ -23,13 +24,14 @@ module.exports = function (RED) {
         receiver.registerMessageHandler(
           (sbMsg) => {
             msg.sbMsg = sbMsg;
-            msg.payload = convertMessageBody(sbMsg);
+            msg.payload = utils.convertMessageBody(sbMsg);
             node.send(msg);
           },
           (sbErr) => {
             node.status({ fill: "red", shape: "ring", text: "disconnected" });
             node.error(sbErr + " ==> handler error. Retrying .... ")
-            node.receiveMessages(receiver, maxConcurrentCalls, node, msg);
+            utils.retry(node.receiveMessages, [receiver, maxConcurrentCalls, node, msg],5,node);
+            // node.receiveMessages(receiver, maxConcurrentCalls, node, msg);
           },
           {
             'maxConcurrentCalls': maxConcurrentCalls
@@ -38,7 +40,8 @@ module.exports = function (RED) {
       } catch (err) {
         node.status({ fill: "red", shape: "ring", text: "disconnected" });
         node.error(err + " Retrying .... ")
-        node.receiveMessages(receiver, maxConcurrentCalls, node, msg);
+        utils.retry(node.receiveMessages, [receiver, maxConcurrentCalls, node, msg],5,node)
+        // node.receiveMessages(receiver, maxConcurrentCalls, node, msg);
       }
     }
 

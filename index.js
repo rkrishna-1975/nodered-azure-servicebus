@@ -1,6 +1,10 @@
 
 
-function stringFromUTF8Array(data) {
+function Utils() {
+
+}
+
+Utils.prototype.stringFromUTF8Array = function (data) {
   const extraByteMap = [1, 1, 1, 1, 2, 2, 3, 0];
   var count = data.length;
   var str = "";
@@ -29,17 +33,26 @@ function stringFromUTF8Array(data) {
 }
 
 
-convertMessageBody = function (message) {
+Utils.prototype.convertMessageBody = function (message) {
   var returnValue = null;
-
+  console.log(message.body + " ==> " + (Object.prototype.toString.call(message.body)));
   if (message.body instanceof Buffer) {
     returnValue = message.body.toString();
-  } else if (message.body instanceof String) {
-    returnValue = message.body;
-  } else if (message.body instanceof Object) {
+  } else {
     returnValue = message.body
   }
-
-
   return returnValue;
 }
+
+
+Utils.prototype.retry = async (fn, args, retrySeconds, scope) => {
+
+  console.log("Received a retry call for " + fn.name + " in " + retrySeconds + "s");
+  await new Promise(resolve => setTimeout(resolve, 3000));
+  console.log("Retrying " + fn.name);
+  fn.apply(scope,args);
+}
+
+
+module.exports = Utils;
+
